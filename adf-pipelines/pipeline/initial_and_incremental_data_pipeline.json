@@ -1,0 +1,174 @@
+{
+	"name": "initial_and_incremental_data_pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "Init_and_increm_ld_SQL DB to Bronze",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "last_load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "current_load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT * FROM [source].[sales_data] where \nDate_ID > '@{activity('last_load').output.value[0].last_load}'\nAND\nDate_ID <= '@{activity('current_load').output.value[0].max_date}'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "bronze_azuresql_ds",
+						"type": "DatasetReference",
+						"parameters": {
+							"table_name": "sales_data"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_bronze",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "last_load",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT * FROM [source].[water_mark]",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "bronze_azuresql_ds",
+						"type": "DatasetReference",
+						"parameters": {
+							"table_name": "water_mark"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "current_load",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT MAX(Date_ID) as max_date FROM [source].[sales_data];",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "bronze_azuresql_ds",
+						"type": "DatasetReference",
+						"parameters": {
+							"table_name": "sales_data"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Water Mark Update",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Init_and_increm_ld_SQL DB to Bronze",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[source].[updateWaterMark]",
+					"storedProcedureParameters": {
+						"lastLoad": {
+							"value": {
+								"value": "@activity('current_load').output.value[0].max_date",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "linked_service_AzureSqlDB",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2025-05-28T07:25:00Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,31 @@
+{
+	"name": "bronze_http_github_csv_ds",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "linked_service_github",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"load_flag": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": {
+					"value": "melvinm43/car-sales-azure-data-engineering-project/refs/heads/develop/Raw%20Data/@{dataset().load_flag}",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

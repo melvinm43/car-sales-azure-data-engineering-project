@@ -1,0 +1,9 @@
+{
+	"name": "adf-cars-melvin",
+	"location": "southindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "95df2d25-2f70-4b2a-a657-183a4960fb47",
+		"tenantId": "9d43a5b2-9e42-4e8a-b63b-4a76d6c8fc57"
+	}
+}
