@@ -1,0 +1,68 @@
+# General
+*.log
+*.tmp
+*.bak
+*.swp
+*.DS_Store
+Thumbs.db
+
+# Python / PySpark
+__pycache__/
+*.pyc
+*.pyo
+*.ipynb_checkpoints/
+.env
+.venv/
+.env.*
+
+# Jupyter notebooks (optional — ignore checkpoints, not notebooks)
+.ipynb_checkpoints/
+
+# Databricks (if syncing notebooks with repo)
+*.dbc
+.dbc/
+.dbx/
+.dbt/
+databricks*.json
+
+# Azure Data Factory (ADF)
+*.publishsettings
+*.AzureRMProfile.json
+*.parameters.json
+local.settings.json
+
+# Terraform / Bicep (if used for infra)
+*.tfstate
+*.tfstate.*
+.terraform/
+*.bicep.params.json
+
+# VSCode / IDEs
+.vscode/
+.idea/
+*.code-workspace
+
+# Logs / temp data files
+logs/
+*.csv
+*.parquet
+*.json
+*.avro
+*.orc
+
+# Secrets / tokens
+secrets.json
+credentials.json
+*.key
+*.pem
+
+# Node/npm (if using npm tools)
+node_modules/
+package-lock.json
+
+# Build / dist folders
+dist/
+build/
+
+# Other files
+.DS_Store
